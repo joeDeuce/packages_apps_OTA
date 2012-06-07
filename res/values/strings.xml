@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ParanoidAndroid OTA</string>
+    <string name="no_internet">This feature needs internet connection. Please connect to internet and try again</string>
+    <string name="loading_info">Loading online information</string>
+    <string name="timeout">Server connection timeout, Please try later.</string>
+    <string name="default_mirror">Default Mirror</string>
+    <string name="select_mirror">Select desired Mirror</string>
+    <string name="update_found_rom">ROM is not up to date, do you want to download latest version?</string>
+    <string name="no_update_found">Your ROM is up to date</string>
+    <string name="rom_downloaded">Sucessfully downloaded latest ROM, file is located on SD. Do you want to automatically flash the ROM?</string>
+    <string name="reboot_alert">Phone will reboot and install ROM. No wipes are needed. If you have issues please install manually. File is located in</string>
+    <string name="downloading">Downloading files</string>
+    <string name="wrong_download">Something went wrong with download, no changes have been made. Please try again in some minutes</string>
+</resources>

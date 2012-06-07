@@ -1,0 +1,13 @@
+Copyright (c) 2012 ParanoidAndroid Project
+
+For building use
+
+    . build/envsetup.sh
+
+Lunch your device
+   
+    lunch cm_xxxx-userdebug
+
+and then make with mmm
+
+    mmm packages/apps/ParanoidOTA
