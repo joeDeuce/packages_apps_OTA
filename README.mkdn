@@ -1,4 +1,11 @@
+Paranoid Over The Air
+=====================
+
 Copyright (c) 2012 ParanoidAndroid Project
+
+
+Building from sources
+---------------------
 
 For building use
 
@@ -11,3 +18,5 @@ Lunch your device
 and then make with mmm
 
     mmm packages/apps/ParanoidOTA
+
+You can also get ParanoidAndroid sources, and ParanoidOTA will be automatically built
