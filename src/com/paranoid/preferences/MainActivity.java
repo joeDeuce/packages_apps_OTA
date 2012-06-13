@@ -26,15 +26,16 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
 import android.widget.Toast;
+import java.io.File;
 import java.util.ArrayList;
 
 public class MainActivity extends Activity{
     
     protected static final String HTTP_HEADER = "http://paranoidandroid.d4net.org/";
+    protected static final String ROM_VERSION_PROPERTY = "ro.pa.version";
+    protected static final String DEVICE_NAME_PROPERTY = "ro.product.device";
     protected static String ROM_VERSION_OTA = "rom_version.ota";
     protected static String ROM_MIRRORS = "rom_mirrors.ota";
-    protected static final String ROM_VERSION_PROPIERTY = "ro.paranoid.shortversion";
-    protected static final String DEVICE_NAME_PROPIERTY = "ro.product.device";
     protected static ArrayList<String[]> mServerMirrors = new ArrayList();
     protected static ProgressDialog mLoadingProgress;
     protected static boolean mServerTimeout = false;
@@ -46,32 +47,30 @@ public class MainActivity extends Activity{
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        mDevice = Utils.getProp(DEVICE_NAME_PROPIERTY)+"/";
+        mDevice = Utils.getProp(DEVICE_NAME_PROPERTY) + File.separator;
         ROM_VERSION_OTA = HTTP_HEADER+mDevice+ROM_VERSION_OTA;
         ROM_MIRRORS = HTTP_HEADER+mDevice+ROM_MIRRORS;
         mServerMirrors.clear();
         mLoadingProgress = ProgressDialog.show(MainActivity.this, null, getString(R.string.loading_info), false, false);
-        final boolean mIsConnected = DownloadMod.requestInternetConnection(this);
+        final boolean mIsConnected = DownloadFiles.requestInternetConnection(this);
         new Thread(new Runnable(){
             public void run(){
                 if(mIsConnected){
-                    FetchOnlineData mDownloadVersion = new FetchOnlineData();
-                    mDownloadVersion.execute(ROM_VERSION_OTA, "version.tmp");
+                    WebFields.OtaVersion mOtaVersion = new WebFields.OtaVersion();
                     mStart = System.currentTimeMillis();
                     while(mLatestVersion == 0){
-                        mDownloadVersion.getWebVersion();
+                        mOtaVersion.getWebVersion();
                         if(System.currentTimeMillis() - mStart > 15000){
                             mToastHandler.sendEmptyMessage(1);
                             mServerTimeout = true;
                         }
                         if(mLatestVersion != 0 || mServerTimeout)
-                            return;
+                            break;
                     }
-                    FetchOnlineData mMirrors = new FetchOnlineData();
-                    mMirrors.execute(ROM_MIRRORS, "mirrors.tmp");
+                    WebFields.RomMirrors mMirrors = new WebFields.RomMirrors();
                     mStart = System.currentTimeMillis();
                     while(mServerMirrors.isEmpty()){
-                        mDownloadVersion.getMirrorList(MainActivity.this, mLatestVersion);
+                        mMirrors.getMirrorList();
                         if(System.currentTimeMillis() - mStart > 15000){
                             mToastHandler.sendEmptyMessage(1);
                             mServerTimeout = true;
@@ -81,13 +80,7 @@ public class MainActivity extends Activity{
                     }
                     mLoadingProgress.dismiss();
                     if(!mServerTimeout){
-                    String mVersionName = "";
-                        try{
-                            mVersionName = MainActivity.this.getPackageManager().getPackageInfo(MainActivity.this.getPackageName(), 0 ).versionName;
-                        }catch(Exception e){
-                            e.printStackTrace();
-                        }
-                        if(mLatestVersion > Double.parseDouble(Utils.getProp(ROM_VERSION_PROPIERTY))){
+                        if(mLatestVersion > Utils.getRomVersion(ROM_VERSION_PROPERTY)){
                             mDialogHandler.sendEmptyMessage(0);
                         }
                         else{
@@ -138,7 +131,7 @@ public class MainActivity extends Activity{
                         serverBuilder.setTitle(getString(R.string.select_mirror));
                         serverBuilder.setItems(items, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int item) {
-                                new DownloadMod().requestDownload(mServerMirrors.get(item)[1], R.string.rom_downloaded, "temp.zip", MainActivity.this);
+                                new DownloadFiles().requestDownload(mServerMirrors.get(item)[1], R.string.rom_downloaded, "temp.zip", MainActivity.this);
                             }
                         });
                         AlertDialog alert = serverBuilder.create();

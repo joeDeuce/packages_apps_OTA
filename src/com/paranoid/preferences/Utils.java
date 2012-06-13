@@ -16,6 +16,7 @@
 
 package com.paranoid.preferences;
 
+import android.util.Log;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -64,6 +65,12 @@ public class Utils {
 	return removedBadChars;
     }
     
+    public static double getRomVersion(String prop){
+        String mString = getProp(prop);
+        String fullVersion = mString.substring(nthOccurrence(mString, '-', 1)+1, nthOccurrence(mString, '-', 2)-1);
+        return Double.parseDouble(fullVersion);
+    }
+    
     public static String getProp(String prop) {
         try {
             String output;
@@ -85,5 +92,12 @@ public class Utils {
         }catch(Exception e){
             e.printStackTrace();
         }
+    }
+    
+    public static int nthOccurrence(String str, char c, int n) {
+        int pos = str.indexOf(c, 0);
+        while (n-- > 0 && pos != -1)
+            pos = str.indexOf(c, pos+1);
+        return pos;
     }
 }
