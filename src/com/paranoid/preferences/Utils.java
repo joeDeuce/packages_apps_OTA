@@ -16,7 +16,6 @@
 
 package com.paranoid.preferences;
 
-import android.util.Log;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -25,8 +24,7 @@ import java.nio.channels.FileChannel;
 
 public class Utils {
     
-    private static final String MOUNT_SYSTEM_RW="mount -o rw,remount /system";
-    private static final String MOUNT_SYSTEM_RO="mount -o ro,remount /system";
+    protected static final String ROM_VERSION_PROPERTY = "ro.pa.version";
     
     public static String readFile(String file) {
     String text = "";
@@ -65,8 +63,8 @@ public class Utils {
 	return removedBadChars;
     }
     
-    public static double getRomVersion(String prop){
-        String mString = getProp(prop);
+    public static double getRomVersion(){
+        String mString = getProp(ROM_VERSION_PROPERTY);
         String fullVersion = mString.substring(nthOccurrence(mString, '-', 1)+1, nthOccurrence(mString, '-', 2)-1);
         return Double.parseDouble(fullVersion);
     }
@@ -82,15 +80,6 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
             return "";
-        }
-    }
-    
-    public static void mountFilesystem(boolean rw){
-        String command = rw ? MOUNT_SYSTEM_RW : MOUNT_SYSTEM_RO;
-        try{
-            RunCommands.execute(new String[]{"su", command}, 0);
-        }catch(Exception e){
-            e.printStackTrace();
         }
     }
     

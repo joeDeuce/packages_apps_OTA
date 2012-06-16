@@ -106,8 +106,7 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
                             public void onClick(DialogInterface dialog, int id) {
                                 RunCommands.execute(new String[]{
                                     "busybox echo 'install_zip(\"/sdcard/"+mFileName+"\");' > /cache/recovery/extendedcommand",
-                                    "busybox echo 'install_zip(\"/emmc/"+mFileName+"\");' >> /cache/recovery/extendedcommand",
-                                    "reboot recovery"}, 0); 
+                                    "busybox echo 'install_zip(\"/emmc/"+mFileName+"\");' >> /cache/recovery/extendedcommand"}, mContext); 
                             }
                         });
                     AlertDialog alert = builder.create();

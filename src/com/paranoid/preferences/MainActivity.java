@@ -33,7 +33,6 @@ import java.util.ArrayList;
 public class MainActivity extends Activity{
     
     protected static final String HTTP_HEADER = "http://paranoidandroid.d4net.org/";
-    protected static final String ROM_VERSION_PROPERTY = "ro.pa.version";
     protected static final String DEVICE_NAME_PROPERTY = "ro.product.device";
     protected static String ROM_VERSION_OTA = "rom_version.ota";
     protected static String ROM_MIRRORS = "rom_mirrors.ota";
@@ -81,7 +80,7 @@ public class MainActivity extends Activity{
                     }
                     mLoadingProgress.dismiss();
                     if(!mServerTimeout){
-                        if(mLatestVersion > Utils.getRomVersion(ROM_VERSION_PROPERTY)){
+                        if(mLatestVersion > Utils.getRomVersion()){
                             mDialogHandler.sendEmptyMessage(0);
                         }
                         else{

@@ -16,27 +16,22 @@
 
 package com.paranoid.preferences;
 
+import android.content.Context;
+import android.os.PowerManager;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class RunCommands implements Runnable{
     	
-    private static String [] command = null;
-    private static int wait = 0;
+    private static String [] mCommand = null;
+    private static Context mContext;
             
-    public RunCommands(String[] command, int wait) {
-        RunCommands.command=command;
-        RunCommands.wait=wait;
+    public RunCommands(String[] command, Context context) {
+        RunCommands.mCommand = command;
+        RunCommands.mContext = context;
     }
     
-    public static boolean execute(String[] command, int wait) {
-        if(wait!=0){
-            try {
-                Thread.sleep(wait);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    public static boolean execute(String[] command, Context context) {
         Process proc;       
         try {        
             proc = Runtime.getRuntime().exec("su");            
@@ -47,6 +42,8 @@ public class RunCommands implements Runnable{
             os.flush();       
             os.close();	             
             proc.waitFor();
+            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            pm.reboot("recovery");
             return true;
         } catch (IOException e) {                
             e.printStackTrace();
@@ -58,7 +55,7 @@ public class RunCommands implements Runnable{
     }
 
     public void run() {
-        execute(command, wait);	
+        execute(mCommand, mContext);	
     }
     
 }
