@@ -27,7 +27,6 @@ public class Utils {
     
     private static final String MOUNT_SYSTEM_RW="mount -o rw,remount /system";
     private static final String MOUNT_SYSTEM_RO="mount -o ro,remount /system";
-    protected static final String ROM_VERSION_PROPERTY = "ro.pa.version";
     
     public static String readFile(String file) {
     String text = "";
@@ -66,8 +65,8 @@ public class Utils {
 	return removedBadChars;
     }
     
-    public static double getRomVersion(){
-        String mString = getProp(ROM_VERSION_PROPERTY);
+    public static double getRomVersion(String prop){
+        String mString = getProp(prop);
         String fullVersion = mString.substring(nthOccurrence(mString, '-', 1)+1, nthOccurrence(mString, '-', 2)-1);
         return Double.parseDouble(fullVersion);
     }

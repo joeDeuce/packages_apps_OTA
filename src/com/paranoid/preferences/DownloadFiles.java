@@ -32,13 +32,11 @@ import java.net.URLConnection;
 
 public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
         
-        private static Activity activity;
-        private static String fileName;
-        private static int rebootReason;
+        private static Context mContext;
+        private static String mFileName;
         private static ProgressDialog mProgressDialog;
-        private static String tempFile;
-        public static Boolean isSuccess = false;
-        public static int lengthOfFile;
+        public static boolean mIsSuccess = false;
+        public static int mFileLength;
         
         @Override
         protected Boolean doInBackground(String... sUrl) {
@@ -47,22 +45,24 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
                 URL url = new URL(sUrl[0]);
                 URLConnection connection = url.openConnection();
                 connection.connect();
-                lengthOfFile = connection.getContentLength();
+                mFileLength = connection.getContentLength();
                 InputStream input = new BufferedInputStream(url.openStream());
-                OutputStream output = new FileOutputStream(tempFile);
+                OutputStream output = new FileOutputStream(Environment.getExternalStorageDirectory() + File.separator + mFileName);
                 byte data[] = new byte[1024];
                 long total = 0;
                 while ((count = input.read(data)) != -1) {
                     total += count;
-                    publishProgress((int)(total*100/lengthOfFile));
+                    publishProgress((int)(total*100/mFileLength));
                     output.write(data, 0, count);
                 }
                 output.flush();
                 output.close();
                 input.close();
+                mIsSuccess = true;
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
+                mIsSuccess = false;
                 return false;
             }
         }
@@ -75,45 +75,54 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
         @Override
         protected void onPostExecute(Boolean result) {
             mProgressDialog.dismiss();
-            Utils.mountFilesystem(true);
-            File temp = new File(tempFile);
-            if(temp.exists() && temp.length() == lengthOfFile){
-                final String path = Environment.getExternalStorageDirectory().getPath() + File.separator;
-                Utils.mountFilesystem(true);
-                RunCommands.execute(new String[]{"busybox mv " + tempFile + " " + path + fileName}, 0);
-                Utils.mountFilesystem(false);
-                if(result)
-                    isSuccess = true;
-                if(rebootReason != 0)
-                    MainActivity.rebootDialog(rebootReason, activity, false);
-            }
-            else{
-                wrongDownload(activity);
-            }
+            if(mIsSuccess)
+                showRebootDialog();
+            else
+                showWrongDownloadDialog();
         }
         
-    public void requestDownload(String url, int dialogId, String filename, Activity activity){
-        tempFile = Environment.getExternalStorageDirectory().getPath()+ File.separator + "temp.tmp";
-        mProgressDialog = new ProgressDialog(activity);
-        mProgressDialog.setMessage(activity.getString(R.string.downloading));
+    public void requestDownload(String url, String filename, Context context){
+        mProgressDialog = new ProgressDialog(context);
+        mProgressDialog.setMessage(context.getString(R.string.downloading));
         mProgressDialog.setIndeterminate(false);
         mProgressDialog.setCancelable(false);
         mProgressDialog.setMax(100);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mProgressDialog.show();
-        this.activity = activity;
-        this.rebootReason = dialogId;
-        this.fileName = filename;
+        mContext = context;
+        mFileName = filename;
         this.execute(url);
     }
+    
+    public static void showRebootDialog(){
+        AlertDialog.Builder rebootAlert = new AlertDialog.Builder(mContext);
+        rebootAlert.setMessage(R.string.rom_downloaded)
+        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setMessage(mContext.getString(R.string.reboot_alert)+"\n"+Environment.getExternalStorageDirectory().getPath() + File.separator + mFileName)
+                        .setCancelable(false)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                RunCommands.execute(new String[]{
+                                    "busybox echo 'install_zip(\"/sdcard/"+mFileName+"\");' > /cache/recovery/extendedcommand",
+                                    "busybox echo 'install_zip(\"/emmc/"+mFileName+"\");' >> /cache/recovery/extendedcommand",
+                                    "reboot recovery"}, 0); 
+                            }
+                        });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+         }})
+        .setNegativeButton(android.R.string.no, null);
+        rebootAlert.show();
+    }
 
-    private static void wrongDownload(final Activity activity){
-        AlertDialog.Builder wrongDownload = new AlertDialog.Builder(activity);
+    private static void showWrongDownloadDialog(){
+        AlertDialog.Builder wrongDownload = new AlertDialog.Builder(mContext);
         wrongDownload.setMessage(R.string.wrong_download)
         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                activity.finish();
-                android.os.Process.killProcess(android.os.Process.myPid());
+                dialog.dismiss();
             }
         });
         wrongDownload.show();

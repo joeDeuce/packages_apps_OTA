@@ -19,6 +19,7 @@ package com.paranoid.preferences;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 public class MainActivity extends Activity{
     
     protected static final String HTTP_HEADER = "http://paranoidandroid.d4net.org/";
+    protected static final String ROM_VERSION_PROPERTY = "ro.pa.version";
     protected static final String DEVICE_NAME_PROPERTY = "ro.product.device";
     protected static String ROM_VERSION_OTA = "rom_version.ota";
     protected static String ROM_MIRRORS = "rom_mirrors.ota";
@@ -79,7 +81,7 @@ public class MainActivity extends Activity{
                     }
                     mLoadingProgress.dismiss();
                     if(!mServerTimeout){
-                        if(mLatestVersion > Utils.getRomVersion()){
+                        if(mLatestVersion > Utils.getRomVersion(ROM_VERSION_PROPERTY)){
                             mDialogHandler.sendEmptyMessage(0);
                         }
                         else{
@@ -130,7 +132,7 @@ public class MainActivity extends Activity{
                         serverBuilder.setTitle(getString(R.string.select_mirror));
                         serverBuilder.setItems(items, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int item) {
-                                new DownloadFiles().requestDownload(mServerMirrors.get(item)[1], R.string.rom_downloaded, "temp.zip", MainActivity.this);
+                                new DownloadFiles().requestDownload(mServerMirrors.get(item)[1], "paranoid"+mLatestVersion+".zip", MainActivity.this);
                             }
                         });
                         AlertDialog alert = serverBuilder.create();
@@ -146,34 +148,6 @@ public class MainActivity extends Activity{
             alert.show();
         }
     };
-
-    public static void rebootDialog(int dialog, final Activity activity, final boolean isTheme){
-        AlertDialog.Builder rebootAlert = new AlertDialog.Builder(activity);
-        rebootAlert.setMessage(dialog)
-        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                    builder.setMessage(activity.getString(R.string.reboot_alert)+"\n"+Environment.getExternalStorageDirectory().getPath()+"/temp.zip")
-                        .setCancelable(false)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                RunCommands.execute(new String[]{
-                                "busybox echo 'install_zip(\"/sdcard/temp.zip\");' > /cache/recovery/extendedcommand",
-                                "busybox echo 'install_zip(\"/emmc/temp.zip\");' >> /cache/recovery/extendedcommand",
-                                "reboot recovery"}, 0); 
-                            }
-                        });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-         }})
-        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                activity.finish();
-                android.os.Process.killProcess(android.os.Process.myPid());
-            }
-        });
-        rebootAlert.show();
-    }
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event){
