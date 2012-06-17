@@ -127,8 +127,8 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
         wrongDownload.show();
     }
     
-    public static boolean requestInternetConnection(Activity activity){
-        ConnectivityManager conMgr =  (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+    public static boolean requestInternetConnection(Context context){
+        ConnectivityManager conMgr =  (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo i = conMgr.getActiveNetworkInfo();
         if (i == null || !i.isConnected() || !i.isAvailable()){
             Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_LONG).show();
