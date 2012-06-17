@@ -131,7 +131,7 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
         ConnectivityManager conMgr =  (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo i = conMgr.getActiveNetworkInfo();
         if (i == null || !i.isConnected() || !i.isAvailable()){
-            Toast.makeText(activity, R.string.no_internet, Toast.LENGTH_LONG).show();
+            Toast.makeText(context, R.string.no_internet, Toast.LENGTH_LONG).show();
             return false;
         }
         return true;
