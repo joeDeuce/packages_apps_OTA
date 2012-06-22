@@ -21,85 +21,95 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
+import static com.paranoid.preferences.scheduler.BootReceiver.UPDATE_INTENT;
 import java.io.File;
-import java.util.ArrayList;
 
 public class MainActivity extends Activity{
     
-    protected static final String HTTP_HEADER = "http://paranoidandroid.d4net.org/";
-    protected static final String DEVICE_NAME_PROPERTY = "ro.product.device";
-    protected static String ROM_VERSION_OTA = "rom_version.ota";
-    protected static String ROM_MIRRORS = "rom_mirrors.ota";
-    protected static ArrayList<String[]> mServerMirrors = new ArrayList();
-    protected static ProgressDialog mLoadingProgress;
-    protected static boolean mServerTimeout = false;
-    protected static double mLatestVersion;
-    protected static String mDevice;
-    protected static long mStart;
+   protected static final int MENU_CHECK = Menu.FIRST;
+   protected static final int MENU_INTERVAL = Menu.FIRST + 1;
+   protected WebFields.OtaVersion mOtaVersion;
+   protected WebFields.RomMirrors mMirrors;
+   protected ProgressDialog mLoadingProgress;
+   protected boolean mIsNotification;
+   protected boolean mServerTimeout;
+   protected long mStart;
+   protected Menu mOptionsMenu;
+   protected Context mContext;
     
-    @Override
-    public void onCreate(Bundle savedInstanceState){
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        mDevice = Utils.getProp(DEVICE_NAME_PROPERTY) + File.separator;
-        ROM_VERSION_OTA = HTTP_HEADER+mDevice+ROM_VERSION_OTA;
-        ROM_MIRRORS = HTTP_HEADER+mDevice+ROM_MIRRORS;
-        mServerMirrors.clear();
-        mLoadingProgress = ProgressDialog.show(MainActivity.this, null, getString(R.string.loading_info), false, false);
-        final boolean mIsConnected = DownloadFiles.requestInternetConnection(this);
-        new Thread(new Runnable(){
-            public void run(){
-                if(mIsConnected){
-                    WebFields.OtaVersion mOtaVersion = new WebFields.OtaVersion();
-                    mStart = System.currentTimeMillis();
-                    while(mLatestVersion == 0){
-                        mOtaVersion.getWebVersion();
-                        if(System.currentTimeMillis() - mStart > 15000){
-                            mToastHandler.sendEmptyMessage(1);
-                            mServerTimeout = true;
-                        }
-                        if(mLatestVersion != 0 || mServerTimeout)
-                            break;
-                    }
-                    WebFields.RomMirrors mMirrors = new WebFields.RomMirrors();
-                    mStart = System.currentTimeMillis();
-                    while(mServerMirrors.isEmpty()){
-                        mMirrors.getMirrorList();
-                        if(System.currentTimeMillis() - mStart > 15000){
-                            mToastHandler.sendEmptyMessage(1);
-                            mServerTimeout = true;
-                        }
-                        if(!mServerMirrors.isEmpty() || mServerTimeout)
-                            break;
-                    }
-                    mLoadingProgress.dismiss();
-                    if(!mServerTimeout){
-                        if(mLatestVersion > Utils.getRomVersion()){
-                            mDialogHandler.sendEmptyMessage(0);
+   @Override
+   public void onCreate(Bundle savedInstanceState){
+       super.onCreate(savedInstanceState);
+       mContext = this;
+       setContentView(R.layout.main);
+       
+       Bundle extras = getIntent().getExtras();
+       mIsNotification = extras != null ? extras.getBoolean("update") : false;
+       checkForUpdates();
+   }
+    
+   private void checkForUpdates(){
+       mServerTimeout = false;
+       mLoadingProgress = ProgressDialog.show(mContext, null, getString(R.string.loading_info), false, false);
+       final boolean mIsConnected = DownloadFiles.requestInternetConnection(mContext, true);
+       new Thread(new Runnable(){
+           public void run(){
+               if(mIsConnected){
+                   mOtaVersion = new WebFields.OtaVersion();
+                   mMirrors = new WebFields.RomMirrors();
+                   mStart = System.currentTimeMillis();
+                   while(mOtaVersion.version == 0){
+                       mOtaVersion.getWebVersion();
+                       if(System.currentTimeMillis() - mStart > 15000){
+                           mToastHandler.sendEmptyMessage(1);
+                           mServerTimeout = true;
+                       }
+                       if(mOtaVersion.version != 0 || mServerTimeout)
+                           break;
+                   }
+                   mStart = System.currentTimeMillis();
+                   while(mMirrors.mirrors.isEmpty()){
+                       mMirrors.getMirrorList();
+                       if(System.currentTimeMillis() - mStart > 15000){
+                           mToastHandler.sendEmptyMessage(1);
+                           mServerTimeout = true;
+                       }
+                       if(!mMirrors.mirrors.isEmpty() || mServerTimeout)
+                           break;
+                   }
+                   mLoadingProgress.dismiss();
+                   if(!mServerTimeout){
+                        if(mOtaVersion.version > Utils.getRomVersion()){
+                           mDialogHandler.sendEmptyMessage(0);
                         }
                         else{
                             mToastHandler.sendEmptyMessage(0);
                         }
-                    }
-                } else
-                    mLoadingProgress.dismiss();
-            }
-        }).start();
-    }
-    
-   private CharSequence[] mMirrorNames(){
-       String[] mTemp = new String[mServerMirrors.size()];
-       for(int i=0; i<mTemp.length; i++){
-           if(mServerMirrors.get(i)[1].equals("self_server")){
-               mServerMirrors.set(i, new String[]{getString(R.string.default_mirror), HTTP_HEADER+mDevice+"paranoid"+mLatestVersion+".zip"});
+                   }
+               } else
+                   mLoadingProgress.dismiss();
            }
-           mTemp[i] = mServerMirrors.get(i)[0];
+       }).start();
+   }
+   
+   private CharSequence[] mMirrorNames(){
+       String[] mTemp = new String[mMirrors.mirrors.size()];
+       for(int i=0; i<mTemp.length; i++){
+           if(mMirrors.mirrors.get(i)[1].equals("self_server")){
+               mMirrors.mirrors.set(i, new String[]{getString(R.string.default_mirror), FetchOnlineData.HTTP_HEADER+FetchOnlineData.mDevice+"paranoid"+mOtaVersion.version+".zip"});
+           }
+           mTemp[i] = mMirrors.mirrors.get(i)[0];
        }
        return mTemp;
    }
@@ -109,10 +119,10 @@ public class MainActivity extends Activity{
         public void handleMessage(Message msg) {
             switch(msg.what){
                 case 0:
-                    Toast.makeText(MainActivity.this, R.string.no_update_found, Toast.LENGTH_LONG).show();
+                    Toast.makeText(mContext, R.string.no_update_found, Toast.LENGTH_LONG).show();
                     break;
                 case 1:
-                    Toast.makeText(MainActivity.this, R.string.timeout, Toast.LENGTH_LONG).show();
+                    Toast.makeText(mContext, R.string.timeout, Toast.LENGTH_LONG).show();
                     break;
             }
         }
@@ -121,37 +131,91 @@ public class MainActivity extends Activity{
    private Handler mDialogHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setMessage(getString(R.string.update_found_rom)+" (v"+mLatestVersion+")")
-                .setCancelable(false)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id){
-                        final CharSequence[] items = mMirrorNames();
-                        AlertDialog.Builder serverBuilder = new AlertDialog.Builder(MainActivity.this);
-                        serverBuilder.setTitle(getString(R.string.select_mirror));
-                        serverBuilder.setItems(items, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int item) {
-                                new DownloadFiles().requestDownload(mServerMirrors.get(item)[1], "paranoid"+mLatestVersion+".zip", MainActivity.this);
-                            }
-                        });
-                        AlertDialog alert = serverBuilder.create();
-                        alert.show();
-                    }
-                })
-                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
+            if(!mIsNotification){
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setMessage(getString(R.string.update_found_rom)+" (v"+mOtaVersion.version+")")
+                    .setCancelable(false)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id){
+                            getMirrorsDialog();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                        }
+                    });
+                AlertDialog alert = builder.create();
+                alert.show();
+            } else {
+                getMirrorsDialog();
+                mIsNotification = false;
+            }
+        }
+   };
+   
+   public void getMirrorsDialog(){
+       final CharSequence[] items = mMirrorNames();
+       AlertDialog.Builder serverBuilder = new AlertDialog.Builder(mContext);
+       serverBuilder.setCancelable(false);
+       serverBuilder.setTitle(getString(R.string.select_mirror));
+       serverBuilder.setItems(items, new DialogInterface.OnClickListener() {
+           public void onClick(DialogInterface dialog, int item) {
+               new DownloadFiles().requestDownload(mMirrors.mirrors.get(item)[1], "paranoid"+mOtaVersion.version+".zip", mContext);
+           }
+       })
+       .setNegativeButton(android.R.string.cancel, null);
+       AlertDialog alert = serverBuilder.create();
+       alert.show();
+   }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case MENU_CHECK:
+            	checkForUpdates();
+                return true;
+            case MENU_INTERVAL:
+                Resources r = getResources();
+            	final CharSequence[] items = r.getStringArray(R.array.interval_entries);
+            	final int[] values = r.getIntArray(R.array.interval_values);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.auto_check_interval_dialog);
+                builder.setItems(items, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int item) {
+                        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putInt("interval", values[item]);
+                        editor.commit();
+                        Intent i = new Intent();
+                        i.setAction(UPDATE_INTENT);
+                        mContext.sendBroadcast(i);
                     }
                 });
-            AlertDialog alert = builder.create();
-            alert.show();
+                AlertDialog alert = builder.create();
+                alert.show();
+                return true;
         }
-    };
+        return super.onOptionsItemSelected(item);
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	 mOptionsMenu = menu;
+         menu.add(Menu.NONE, MENU_CHECK, 0, R.string.auto_check)
+                 .setIcon(R.drawable.ic_menu_autocheck)
+                 .setEnabled(true)
+                 .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+         menu.add(Menu.NONE, MENU_INTERVAL, 0, R.string.auto_check_interval)
+		 .setIcon(R.drawable.ic_menu_interval)
+                 .setEnabled(true)
+                 .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+ 	 return super.onCreateOptionsMenu(menu);
+    }
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event){
         if ((keyCode == KeyEvent.KEYCODE_BACK)){
-            finish();
             android.os.Process.killProcess(android.os.Process.myPid());
         }
         return super.onKeyDown(keyCode, event);

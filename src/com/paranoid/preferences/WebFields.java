@@ -16,40 +16,59 @@
 
 package com.paranoid.preferences;
 
+import java.util.ArrayList;
+
 public class WebFields {
     
+    private static final int VERSION = 0;
+    private static final int MIRRORS = 1;
+    
     public static final class OtaVersion extends FetchOnlineData{
+        public double version = 0;
+        
         public OtaVersion(){
-            this.execute(MainActivity.ROM_VERSION_OTA);
-            getWebVersion();
+            this.execute(VERSION);
         }
         
-        protected void getWebVersion(){
+        public void getWebVersion(){
             try{
-                MainActivity.mLatestVersion = Double.parseDouble(mTempContent[0].replace("rom_latest_version=", ""));
+                version = Double.parseDouble(mTempContent[0].replace("rom_latest_version=", ""));
             } catch (NullPointerException e){
                 // Nothing loaded yet
             } catch (NumberFormatException e){
                 // We have no numbers or weird characters on OTA file
             }
         }
+        
+        public void release(){
+            this.cancel(true);
+            version = 0;
+        }
     }
     
     public static final class RomMirrors extends FetchOnlineData{
+        public ArrayList<String[]> mirrors = new ArrayList();
+        
         public RomMirrors(){
-            this.execute(MainActivity.ROM_MIRRORS);
-            getMirrorList();
+            this.execute(MIRRORS);
         }
         
-        protected void getMirrorList(){
+        public void getMirrorList(){
             try{
                 for(int i=0; i < mTempContent.length; i++){
                     String mMirrorName = mTempContent[i].substring(0, mTempContent[i].lastIndexOf("="));
-                    MainActivity.mServerMirrors.add(new String[]{mMirrorName, mTempContent[i].replace(mMirrorName+"=", "")});
+                    mirrors.add(new String[]{mMirrorName, mTempContent[i].replace(mMirrorName+"=", "")});
                 }
             } catch(NullPointerException e){
                 // Nothing loaded yet
+            } catch (StringIndexOutOfBoundsException e){
+                // Good luck with this one
             }
+        }
+        
+        public void release(){
+            this.cancel(true);
+            mirrors.clear();
         }
     }
     

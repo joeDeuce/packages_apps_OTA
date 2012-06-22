@@ -18,20 +18,27 @@ package com.paranoid.preferences;
 
 import android.os.AsyncTask;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class FetchOnlineData extends AsyncTask<String, String, String>{
+public class FetchOnlineData extends AsyncTask<Integer, String, String>{
     
+    protected static final String HTTP_HEADER = "http://paranoidandroid.d4net.org/";
+    protected static final String DEVICE_NAME_PROPERTY = "ro.product.device";
+    protected static String ROM_VERSION_OTA = "rom_version.ota";
+    protected static String ROM_MIRRORS = "rom_mirrors.ota";
+    protected static String mDevice;
     protected String[] mTempContent;
     
     @Override
-    protected String doInBackground(String... paramss) {
+    protected String doInBackground(Integer... paramss) {
+        mDevice = Utils.getProp(DEVICE_NAME_PROPERTY) + File.separator;
         try {
             String temp = "";
-            URL url = new URL(paramss[0]);
+            URL url = new URL(HTTP_HEADER + mDevice + (paramss[0] == 0 ? ROM_VERSION_OTA : ROM_MIRRORS));
             BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
             String str;
             while ((str = in.readLine()) != null) {

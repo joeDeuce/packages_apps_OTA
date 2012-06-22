@@ -16,7 +16,6 @@
 
 package com.paranoid.preferences;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -36,7 +35,8 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
         private static String mFileName;
         private static ProgressDialog mProgressDialog;
         public static boolean mIsSuccess = false;
-        public static int mFileLength;
+        public static double mFileLength;
+        public static double mIgnoreSize = 500000;
         
         @Override
         protected Boolean doInBackground(String... sUrl) {
@@ -46,8 +46,9 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
                 URLConnection connection = url.openConnection();
                 connection.connect();
                 mFileLength = connection.getContentLength();
+                String mPath = Environment.getExternalStorageDirectory() + File.separator + mFileName;
                 InputStream input = new BufferedInputStream(url.openStream());
-                OutputStream output = new FileOutputStream(Environment.getExternalStorageDirectory() + File.separator + mFileName);
+                OutputStream output = new FileOutputStream(mPath);
                 byte data[] = new byte[1024];
                 long total = 0;
                 while ((count = input.read(data)) != -1) {
@@ -58,13 +59,15 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
                 output.flush();
                 output.close();
                 input.close();
-                mIsSuccess = true;
-                return true;
+                File mFile = new File(mPath);
+                mIsSuccess = mFile.length() >= mIgnoreSize;
+                if(!mIsSuccess)
+                    mFile.delete();
             } catch (Exception e) {
                 e.printStackTrace();
                 mIsSuccess = false;
-                return false;
             }
+            return mIsSuccess;
         }
         
         @Override
@@ -127,11 +130,12 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
         wrongDownload.show();
     }
     
-    public static boolean requestInternetConnection(Context context){
+    public static boolean requestInternetConnection(Context context, boolean notify){
         ConnectivityManager conMgr =  (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo i = conMgr.getActiveNetworkInfo();
         if (i == null || !i.isConnected() || !i.isAvailable()){
-            Toast.makeText(context, R.string.no_internet, Toast.LENGTH_LONG).show();
+            if(notify)
+                Toast.makeText(context, R.string.no_internet, Toast.LENGTH_LONG).show();
             return false;
         }
         return true;
