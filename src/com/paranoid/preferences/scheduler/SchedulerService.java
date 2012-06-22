@@ -22,9 +22,10 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.*;
-import android.util.Log;
-import android.widget.Toast;
+import android.graphics.Color;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import com.paranoid.preferences.*;
 
 public class SchedulerService extends Service {
@@ -82,6 +83,9 @@ public class SchedulerService extends Service {
             int icon = R.drawable.ic_launcher;
             CharSequence tickerText = getString(R.string.app_name);
             Notification notification = new Notification(icon, tickerText, mStart);
+            notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+            notification.flags |= Notification.FLAG_AUTO_CANCEL;
+            notification.defaults = Notification.DEFAULT_ALL;
             CharSequence contentTitle = getString(R.string.update_found_notification);
             CharSequence contentText = getString(R.string.update_found_notification_summary)+mLatestVersion;
             Intent notificationIntent = new Intent(SchedulerService.this, MainActivity.class);
