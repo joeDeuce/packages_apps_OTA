@@ -44,15 +44,14 @@ public class BootReceiver extends BroadcastReceiver {
             mAlarmManager.cancel(mPendingIntent);
             startScheduler(context);
         }
-        if(Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
+        if(Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction()))
             startScheduler(context);
-    }
     }
     
     public void startScheduler(Context context){
-        if(mRefreshInterval != 0){
+        if(mRefreshInterval != 0)
             mAlarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), mRefreshInterval * 1000, mPendingIntent);
-        } else
+        else
             context.stopService(mIntent);
     }
     
