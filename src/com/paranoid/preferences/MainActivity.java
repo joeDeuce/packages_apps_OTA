@@ -173,12 +173,12 @@ public class MainActivity extends Activity{
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case MENU_CHECK:
-            	checkForUpdates();
+                checkForUpdates();
                 return true;
             case MENU_INTERVAL:
                 Resources r = getResources();
-            	final CharSequence[] items = r.getStringArray(R.array.interval_entries);
-            	final int[] values = r.getIntArray(R.array.interval_values);
+                final CharSequence[] items = r.getStringArray(R.array.interval_entries);
+                final int[] values = r.getIntArray(R.array.interval_values);
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle(R.string.auto_check_interval_dialog);
                 builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -201,16 +201,16 @@ public class MainActivity extends Activity{
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-    	 mOptionsMenu = menu;
-         menu.add(Menu.NONE, MENU_CHECK, 0, R.string.auto_check)
+         mOptionsMenu = menu;
+         menu.add(Menu.NONE, MENU_CHECK, 0, R.string.check_updates)
                  .setIcon(R.drawable.ic_menu_autocheck)
                  .setEnabled(true)
                  .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
          menu.add(Menu.NONE, MENU_INTERVAL, 0, R.string.auto_check_interval)
-		 .setIcon(R.drawable.ic_menu_interval)
+                 .setIcon(R.drawable.ic_menu_interval)
                  .setEnabled(true)
                  .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
- 	 return super.onCreateOptionsMenu(menu);
+      return super.onCreateOptionsMenu(menu);
     }
     
     @Override

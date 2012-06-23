@@ -32,18 +32,18 @@ public class Utils {
     try{
         FileInputStream f = new FileInputStream( file );
         FileChannel ch = f.getChannel( );
-        ByteBuffer bb = ByteBuffer.allocateDirect( 8192 );
+        ByteBuffer bb = ByteBuffer.allocateDirect(8192);
         byte[] barray = new byte[8192];
 
         int nRead, nGet;
-        while ( (nRead=ch.read( bb )) != -1 ){
-            if ( nRead == 0 )
+        while ((nRead=ch.read( bb )) != -1 ){
+            if (nRead == 0)
                 continue;
-            bb.position( 0 );
-            bb.limit( nRead );
-            while( bb.hasRemaining() ){
-                nGet = Math.min( bb.remaining( ), 8192 );
-                bb.get( barray, 0, nGet );
+            bb.position(0);
+            bb.limit(nRead);
+            while(bb.hasRemaining()){
+                nGet = Math.min(bb.remaining( ), 8192);
+                bb.get(barray, 0, nGet);
                 char[] theChars = new char[nGet];
                 for (int i = 0; i < nGet;) {
                     theChars[i] = (char)(barray[i++]&0xff);
@@ -53,14 +53,14 @@ public class Utils {
 
             }
 
-            bb.clear( );
+            bb.clear();
         }
         removedBadChars = text;
     }
     catch(Exception e){
         e.printStackTrace();
     }
-	return removedBadChars;
+    return removedBadChars;
     }
     
     public static double getRomVersion(){
