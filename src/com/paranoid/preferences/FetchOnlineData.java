@@ -27,7 +27,7 @@ import java.net.URL;
 public class FetchOnlineData extends AsyncTask<Integer, String, String>{
     
     protected static final String HTTP_HEADER = "http://paranoidandroid.d4net.org/";
-    protected static final String DEVICE_NAME_PROPERTY = "ro.product.device";
+    protected static final String DEVICE_NAME_PROPERTY = "ro.cm.device";
     protected static String ROM_VERSION_OTA = "rom_version.ota";
     protected static String ROM_MIRRORS = "rom_mirrors.ota";
     protected static String mDevice;
