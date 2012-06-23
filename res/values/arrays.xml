@@ -15,23 +15,23 @@
 -->
 
 <resources>
-	<string-array name="interval_entries">
-	 <item>@string/one_hour</item>
-	 <item>@string/two_hours</item>
-	 <item>@string/four_hours</item>
-	 <item>@string/one_day</item>
-	 <item>@string/two_days</item>
-	 <item>@string/one_week</item>
+    <string-array name="interval_entries">
+     <item>@string/one_hour</item>
+     <item>@string/two_hours</item>
+     <item>@string/four_hours</item>
+     <item>@string/one_day</item>
+     <item>@string/two_days</item>
+     <item>@string/one_week</item>
      <item>@string/never</item>
-	</string-array>
-	
-	<integer-array name="interval_values">
-	 <item>3600</item>
-	 <item>7200</item>
-	 <item>14400</item>
-	 <item>86400</item>
-	 <item>172800</item>
-	 <item>604800</item>
+    </string-array>
+    
+    <integer-array name="interval_values">
+     <item>3600</item>
+     <item>7200</item>
+     <item>14400</item>
+     <item>86400</item>
+     <item>172800</item>
+     <item>604800</item>
      <item>0</item>
-	</integer-array>
+    </integer-array>
 </resources>

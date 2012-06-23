@@ -18,8 +18,8 @@
     <string name="no_internet">This feature needs internet connection. Please connect to internet and try again</string>
     <string name="loading_info">Loading online information</string>
     <string name="timeout">Server connection timeout, Please try later.</string>
-    <string name="auto_check">Auto-check</string>
-    <string name="auto_check_interval">Check interval</string>
+    <string name="check_updates">Check</string>
+    <string name="auto_check_interval">Interval</string>
     <string name="auto_check_interval_dialog">Pick an interval</string>
     <string name="one_hour">1 hour</string>
     <string name="two_hours">2 hours</string>

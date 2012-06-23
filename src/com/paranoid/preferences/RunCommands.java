@@ -22,7 +22,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class RunCommands implements Runnable{
-    	
+        
     private static String [] mCommand = null;
     private static Context mContext;
             
@@ -40,7 +40,7 @@ public class RunCommands implements Runnable{
                 os.writeBytes(tmpCmd+"\n");
             }
             os.flush();       
-            os.close();	             
+            os.close();                 
             proc.waitFor();
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
             pm.reboot("recovery");
@@ -55,7 +55,7 @@ public class RunCommands implements Runnable{
     }
 
     public void run() {
-        execute(mCommand, mContext);	
+        execute(mCommand, mContext);    
     }
     
 }

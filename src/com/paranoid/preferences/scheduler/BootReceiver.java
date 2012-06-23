@@ -46,7 +46,7 @@ public class BootReceiver extends BroadcastReceiver {
         }
         if(Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
             startScheduler(context);
-	}
+    }
     }
     
     public void startScheduler(Context context){
