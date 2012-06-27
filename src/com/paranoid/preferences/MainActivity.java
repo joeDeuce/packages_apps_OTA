@@ -28,11 +28,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 import static com.paranoid.preferences.scheduler.BootReceiver.UPDATE_INTENT;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MainActivity extends Activity{
     
@@ -197,9 +202,20 @@ public class MainActivity extends Activity{
        builder.setItems(items, new DialogInterface.OnClickListener() {
            public void onClick(DialogInterface dialog, int item) {
                final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-               SharedPreferences.Editor editor = sharedPreferences.edit();
-               editor.putString("storage", String.valueOf(items[item]));
-               editor.commit();
+               String storage = String.valueOf(items[item]);
+               File f = new File(storage + "test_file");
+               try {
+                   f.createNewFile();
+               } catch (IOException ex) {
+                   ex.printStackTrace();
+               }
+               if(f.exists()){
+                   f.delete();
+                   SharedPreferences.Editor editor = sharedPreferences.edit();
+                   editor.putString("storage", storage);
+                   editor.commit();
+               } else
+                   Toast.makeText(mContext, getString(R.string.storage_invalid), Toast.LENGTH_LONG).show();
            }
        });
        AlertDialog alert = builder.create();

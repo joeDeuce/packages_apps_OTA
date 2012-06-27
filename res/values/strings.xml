@@ -21,6 +21,7 @@
     <string name="settings">Settings</string>
     <string name="storage">Storage</string>
     <string name="storage_dialog">Select where to store downloaded ROM\'s</string>
+    <string name="storage_invalid">Invalid storage, are you sure storage exists and is mounted?</string>
     <string name="auto_check">Auto-check</string>
     <string name="auto_check_interval">Check interval</string>
     <string name="auto_check_interval_dialog">Pick an interval</string>
