@@ -88,7 +88,7 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
         }
         
     public void requestDownload(String url, String filename, Context context){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         mProgressDialog = new ProgressDialog(context);
         mProgressDialog.setMessage(context.getString(R.string.downloading));
         mProgressDialog.setIndeterminate(false);
