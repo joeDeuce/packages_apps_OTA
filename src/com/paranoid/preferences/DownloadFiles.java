@@ -20,10 +20,12 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
 import java.io.*;
 import java.net.URL;
@@ -32,6 +34,7 @@ import java.net.URLConnection;
 public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
         
         private static Context mContext;
+        private static String mStorage;
         private static String mFileName;
         private static ProgressDialog mProgressDialog;
         public static boolean mIsSuccess = false;
@@ -46,7 +49,7 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
                 URLConnection connection = url.openConnection();
                 connection.connect();
                 mFileLength = connection.getContentLength();
-                String mPath = Environment.getExternalStorageDirectory() + File.separator + mFileName;
+                String mPath = mStorage + mFileName;
                 InputStream input = new BufferedInputStream(url.openStream());
                 OutputStream output = new FileOutputStream(mPath);
                 byte data[] = new byte[1024];
@@ -85,6 +88,7 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
         }
         
     public void requestDownload(String url, String filename, Context context){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         mProgressDialog = new ProgressDialog(context);
         mProgressDialog.setMessage(context.getString(R.string.downloading));
         mProgressDialog.setIndeterminate(false);
@@ -92,6 +96,7 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
         mProgressDialog.setMax(100);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mProgressDialog.show();
+        mStorage = sharedPreferences.getString("storage", Environment.getExternalStorageDirectory().getAbsolutePath());
         mContext = context;
         mFileName = filename;
         this.execute(url);
@@ -100,20 +105,20 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
     public static void showRebootDialog(){
         AlertDialog.Builder rebootAlert = new AlertDialog.Builder(mContext);
         rebootAlert.setMessage(R.string.rom_downloaded)
+        .setCancelable(false)
         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                    builder.setMessage(mContext.getString(R.string.reboot_alert)+"\n"+Environment.getExternalStorageDirectory().getPath() + File.separator + mFileName)
-                        .setCancelable(false)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                RunCommands.execute(new String[]{
-                                    "busybox echo 'install_zip(\"/sdcard/"+mFileName+"\");' > /cache/recovery/extendedcommand",
-                                    "busybox echo 'install_zip(\"/emmc/"+mFileName+"\");' >> /cache/recovery/extendedcommand"}, mContext); 
-                            }
-                        });
-                    AlertDialog alert = builder.create();
-                    alert.show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setMessage(mContext.getString(R.string.reboot_alert)+"\n"+Environment.getExternalStorageDirectory().getPath() + File.separator + mFileName)
+                    .setCancelable(false)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            RunCommands.execute(new String[]{
+                                "busybox echo 'install_zip(\"" + mStorage + mFileName + "\");' > /cache/recovery/extendedcommand"}, mContext); 
+                        }
+                    });
+                AlertDialog alert = builder.create();
+                alert.show();
          }})
         .setNegativeButton(android.R.string.no, null);
         rebootAlert.show();
@@ -122,6 +127,7 @@ public class DownloadFiles extends AsyncTask<String, Integer, Boolean>{
     private static void showWrongDownloadDialog(){
         AlertDialog.Builder wrongDownload = new AlertDialog.Builder(mContext);
         wrongDownload.setMessage(R.string.wrong_download)
+        .setCancelable(false)
         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.dismiss();

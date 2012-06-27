@@ -33,12 +33,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 import static com.paranoid.preferences.scheduler.BootReceiver.UPDATE_INTENT;
-import java.io.File;
 
 public class MainActivity extends Activity{
     
    protected static final int MENU_CHECK = Menu.FIRST;
-   protected static final int MENU_INTERVAL = Menu.FIRST + 1;
+   protected static final int MENU_SETTINGS = Menu.FIRST + 1;
    protected WebFields.OtaVersion mOtaVersion;
    protected WebFields.RomMirrors mMirrors;
    protected ProgressDialog mLoadingProgress;
@@ -168,28 +167,65 @@ public class MainActivity extends Activity{
        AlertDialog alert = serverBuilder.create();
        alert.show();
    }
+   
+   public void showIntervalDialog(){
+       Resources r = getResources();
+       final CharSequence[] items = r.getStringArray(R.array.interval_entries);
+       final int[] values = r.getIntArray(R.array.interval_values);
+       AlertDialog.Builder builder = new AlertDialog.Builder(this);
+       builder.setTitle(R.string.auto_check_interval_dialog);
+       builder.setItems(items, new DialogInterface.OnClickListener() {
+           public void onClick(DialogInterface dialog, int item) {
+               final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+               SharedPreferences.Editor editor = sharedPreferences.edit();
+               editor.putInt("interval", values[item]);
+               editor.commit();
+               Intent i = new Intent();
+               i.setAction(UPDATE_INTENT);
+               mContext.sendBroadcast(i);
+           }
+       });
+       AlertDialog alert = builder.create();
+       alert.show();
+   }
+   
+   public void showStorageDialog(){
+       Resources r = getResources();
+       final CharSequence[] items = r.getStringArray(R.array.storage_array);
+       AlertDialog.Builder builder = new AlertDialog.Builder(this);
+       builder.setTitle(R.string.storage_dialog);
+       builder.setItems(items, new DialogInterface.OnClickListener() {
+           public void onClick(DialogInterface dialog, int item) {
+               final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+               SharedPreferences.Editor editor = sharedPreferences.edit();
+               editor.putString("storage", String.valueOf(items[item]));
+               editor.commit();
+           }
+       });
+       AlertDialog alert = builder.create();
+       alert.show();
+   }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case MENU_CHECK:
-                checkForUpdates();
+            	checkForUpdates();
                 return true;
-            case MENU_INTERVAL:
-                Resources r = getResources();
-                final CharSequence[] items = r.getStringArray(R.array.interval_entries);
-                final int[] values = r.getIntArray(R.array.interval_values);
+            case MENU_SETTINGS:
+                final CharSequence[] items = new CharSequence[]{getString(R.string.storage), getString(R.string.auto_check)};
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(R.string.auto_check_interval_dialog);
+                builder.setTitle(R.string.settings);
                 builder.setItems(items, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int item) {
-                        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putInt("interval", values[item]);
-                        editor.commit();
-                        Intent i = new Intent();
-                        i.setAction(UPDATE_INTENT);
-                        mContext.sendBroadcast(i);
+                        switch(item){
+                            case 0:
+                                showStorageDialog();
+                                break;        
+                            case 1:
+                                showIntervalDialog();
+                                break;
+                        }
                     }
                 });
                 AlertDialog alert = builder.create();
@@ -201,16 +237,16 @@ public class MainActivity extends Activity{
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-         mOptionsMenu = menu;
-         menu.add(Menu.NONE, MENU_CHECK, 0, R.string.check_updates)
+    	 mOptionsMenu = menu;
+         menu.add(Menu.NONE, MENU_CHECK, 0, R.string.auto_check)
                  .setIcon(R.drawable.ic_menu_autocheck)
                  .setEnabled(true)
                  .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-         menu.add(Menu.NONE, MENU_INTERVAL, 0, R.string.auto_check_interval)
-                 .setIcon(R.drawable.ic_menu_interval)
+         menu.add(Menu.NONE, MENU_SETTINGS, 0, R.string.settings)
+		 .setIcon(R.drawable.ic_menu_settings)
                  .setEnabled(true)
                  .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-      return super.onCreateOptionsMenu(menu);
+ 	 return super.onCreateOptionsMenu(menu);
     }
     
     @Override
