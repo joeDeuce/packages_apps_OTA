@@ -18,7 +18,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.paranoid.preferences"
+      package="com.ota.preferences"
       android:versionCode="2"
       android:versionName="2.0">
     
@@ -33,7 +33,7 @@
         <receiver android:enabled="true" android:name=".scheduler.BootReceiver">
         <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="com.paranoid.preferences.scheduler.UPDATE_ALARM_MANAGER"></action>
+                <action android:name="com.ota.preferences.scheduler.UPDATE_ALARM_MANAGER"></action>
         </intent-filter>
         </receiver>
         

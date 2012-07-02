@@ -1,22 +1,12 @@
-Paranoid Over The Air
-=====================
+Generic OTA
+===========
 
-Copyright (c) 2012 ParanoidAndroid Project
+Forked from ParanoidAndroid Project
+-----------------------------------
 
-
-Building from sources
----------------------
-
-For building use
-
-    . build/envsetup.sh
-
-Lunch your device
-   
-    lunch cm_xxxx-userdebug
-
-and then make with mmm
-
-    mmm packages/apps/ParanoidOTA
-
-You can also get ParanoidAndroid sources, and ParanoidOTA will be automatically built
+         
+         
+        Copyright (c) 2012 Joe Langston
+        Copyright (c) 2012 ParanoidAndroid Project
+         
+         
