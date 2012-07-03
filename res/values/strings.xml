@@ -14,7 +14,7 @@
      limitations under the License.
 -->
 <resources>
-    <string name="app_name">ParanoidAndroid OTA</string>
+    <string name="app_name">joeDeuce OTA</string>
     <string name="no_internet">This feature needs internet connection. Please connect to internet and try again</string>
     <string name="loading_info">Loading online information</string>
     <string name="timeout">Server connection timeout, Please try later.</string>
